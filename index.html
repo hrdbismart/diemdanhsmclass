@@ -168,7 +168,7 @@
             cursor: not-allowed;
         }
 
-        /* Thêm CSS cho thanh xổ xuống (Dropdown) */
+        /* CSS cho thanh xổ xuống (Dropdown) */
         .autocomplete-container {
             position: relative;
         }
@@ -307,21 +307,21 @@
 </div>
 
 <script>
-    // --- CẤU HÌNH HỆ THỐNG (Giữ nguyên cấu trúc logic) ---
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzBqVOR7nzYyKK8I-pJqyz00lYH4eipivK9Dz6wZ0kf6M7CbyiWUnCxBsu5gut9P6fa/exec"; // Sửa tại đây
+    // --- CẤU HÌNH HỆ THỐNG ---
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzbBXhYyQUBNQY4KZI0hwIY7sqVo0UNbC97mPQAPzv7m-pg8IbSoC1dfLMgoH889-m5/exec"; // LƯU Ý: Sửa tại đây bằng URL mới
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQVDw7mfs54dxWOVJNB3UPxDzMgOqqDfpVfYks4C593qhQkIPIEoWrzZX6e0Xj4HewRdcroBgHC4elA/pub?gid=1052302387&single=true&output=csv";
     
-    // Tọa độ lớp học tại Cần Thơ (Ví dụ: VP Bi'S MART)
-    const TARGET_LAT = 10.021432547411322; // Thay đổi vĩ độ
-    const TARGET_LNG = 105.78331504920821; // Thay đổi kinh độ
+    // Tọa độ lớp học tại TP.HCM (Ví dụ: VP Bi'S MART)
+    const TARGET_LAT = 10.021432547411322; 
+    const TARGET_LNG = 105.78331504920821; 
     const MAX_DISTANCE_KM = 1.0; 
 
     let globalStudents = [];
 
-    // 1. Tải danh sách từ CSV ngay khi mở Web (Đã fix lỗi dòng tiêu đề gộp)
+    // 1. Tải danh sách từ CSV ngay khi mở Web (Quét thủ công bỏ qua dòng gộp)
     Papa.parse(CSV_URL, {
         download: true,
-        header: false, // Tắt header mặc định để tự quét thủ công
+        header: false,
         complete: function(results) {
             const rows = results.data;
             let headerRowIndex = -1;
@@ -339,11 +339,10 @@
                         storeIndex = j;
                     }
                 }
-                if(headerRowIndex !== -1) break; // Đã tìm thấy dòng tiêu đề
+                if(headerRowIndex !== -1) break; 
             }
 
             if(nameIndex !== -1 && storeIndex !== -1) {
-                // Đọc dữ liệu từ các dòng dưới dòng tiêu đề
                 for(let i = headerRowIndex + 1; i < rows.length; i++) {
                     const name = rows[i][nameIndex];
                     const store = rows[i][storeIndex];
@@ -369,7 +368,7 @@
         const trimmedText = filterText.trim();
         const lowerFilter = trimmedText.toLowerCase();
         
-        // Chỉ hiển thị gợi ý khi nhập ít nhất 4 ký tự
+        // Chỉ hiển thị gợi ý khi nhập ít nhất 4 ký tự (Không phân biệt hoa thường)
         if (trimmedText.length < 4) {
             suggestionList.style.display = 'none';
             return;
@@ -385,7 +384,6 @@
         filtered.forEach(student => {
             const li = document.createElement('li');
             li.textContent = student.name;
-            // Xử lý khi chọn tên từ danh sách
             li.addEventListener('click', () => {
                 searchInput.value = student.name;
                 storeInput.value = student.store;
@@ -396,7 +394,6 @@
         suggestionList.style.display = 'block';
     }
 
-    // Khi người dùng gõ phím tìm kiếm
     searchInput.addEventListener('input', (e) => {
         renderSuggestions(e.target.value);
         const student = globalStudents.find(s => s.name === e.target.value.trim());
@@ -405,12 +402,10 @@
         }
     });
 
-    // Hiện danh sách khi bấm vào ô nhập
     searchInput.addEventListener('focus', () => {
         renderSuggestions(searchInput.value);
     });
 
-    // Ẩn thanh xổ xuống khi chạm ra ngoài
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.autocomplete-container')) {
             suggestionList.style.display = 'none';
@@ -419,7 +414,7 @@
 
     // 3. Hàm tính khoảng cách GPS (Haversine Formula)
     function getDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371; // Bán kính trái đất (km)
+        const R = 6371; 
         const dLat = (lat2 - lat1) * Math.PI / 180;
         const dLon = (lon2 - lon1) * Math.PI / 180;
         const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
@@ -429,7 +424,7 @@
         return R * c; 
     }
 
-    // 4. Xử lý Gửi điểm danh
+    // 4. Xử lý Gửi điểm danh - MỚI: SỬ DỤNG GIAO THỨC GET VƯỢT LỖI CORS
     function submitData(type) {
         const hoTen = document.getElementById('searchInput').value.trim();
         const cuaHang = document.getElementById('storeInput').value.trim();
@@ -453,26 +448,22 @@
                         return;
                     }
 
-                    // Đủ điều kiện GPS -> Gửi API
-                    const payload = {
-                        hoTen: hoTen,
-                        cuaHang: cuaHang,
-                        loaiDiemDanh: type
-                    };
+                    // Đủ điều kiện GPS -> Đóng gói dữ liệu vào URL để gửi phương thức GET
+                    const urlWithParams = `${APPS_SCRIPT_URL}?hoTen=${encodeURIComponent(hoTen)}&cuaHang=${encodeURIComponent(cuaHang)}&loaiDiemDanh=${encodeURIComponent(type)}`;
 
-                    fetch(APPS_SCRIPT_URL, {
-                        method: 'POST',
-                        mode: 'no-cors', 
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(payload)
-                    }).then(() => {
-                        alert(`✅ Đã ghi nhận Điểm danh [${type}] thành công!`);
-                        document.getElementById('attendanceForm').reset();
+                    fetch(urlWithParams, {
+                        method: 'GET',
+                    }).then(response => response.json())
+                    .then(data => {
+                        if(data.status === 'success') {
+                            alert(`✅ Đã ghi nhận Điểm danh [${type}] thành công!`);
+                            document.getElementById('attendanceForm').reset();
+                        } else {
+                            alert(`❌ Lỗi lưu dữ liệu: ${data.message}`);
+                        }
                         loader.style.display = 'none';
                     }).catch(error => {
-                        alert("Lỗi kết nối máy chủ, vui lòng thử lại.");
+                        alert("Lỗi kết nối máy chủ, vui lòng kiểm tra lại mạng.");
                         loader.style.display = 'none';
                     });
                 },
