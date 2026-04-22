@@ -667,9 +667,16 @@
 
     function animateFireworks() {
         animationFrameId = requestAnimationFrame(animateFireworks);
-        // Nền hơi mờ đen để tạo hiệu ứng đuôi pháo hoa rớt xuống đẹp mắt
+        
+        // --- FIX LỖI MÀN HÌNH ĐEN ---
+        // Thay vì vẽ đè nền đen (làm đen toàn màn hình), ta dùng lệnh destination-out 
+        // để "xóa mờ dần" các hạt pháo hoa cũ, tạo hiệu ứng đuôi rớt xuống trên nền trong suốt.
+        ctx.globalCompositeOperation = 'destination-out';
         ctx.fillStyle = 'rgba(0, 0, 0, 0.15)'; 
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Chuyển lại chế độ vẽ bình thường nhưng pha thêm hiệu ứng phát sáng (lighter)
+        ctx.globalCompositeOperation = 'lighter'; 
 
         particles.forEach((particle, index) => {
             if (particle.alpha > 0) {
