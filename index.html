@@ -391,6 +391,14 @@
             margin: 10px 0 15px;
             text-transform: uppercase;
         }
+        
+        /* Hiệu ứng nổi bật tên người dùng trong popup */
+        .popup-name {
+            color: var(--color-orange);
+            font-size: 115%;
+            font-weight: 900;
+        }
+
         .popup-content p {
             color: var(--color-text-main);
             margin-bottom: 25px;
@@ -413,6 +421,12 @@
         }
         .btn-close-popup:active {
             transform: scale(0.95);
+        }
+        
+        /* CSS cho nút đóng của Popup cảnh báo */
+        .btn-warning-popup {
+            background: linear-gradient(45deg, var(--color-orange), var(--color-orange-dark));
+            box-shadow: 0 6px 15px rgba(243, 106, 34, 0.4);
         }
         
         /* Canvas Pháo hoa */
@@ -469,6 +483,18 @@
         <h3>Tuyệt Vời!</h3>
         <p id="popupMessage">Bạn đã ghi nhận [Vào] thành công.</p>
         <button onclick="closePopup()" class="btn-close-popup">ĐÓNG</button>
+    </div>
+</div>
+
+<!-- =========================================
+     MODAL POPUP CẢNH BÁO/LỖI (THAY THẾ ALERT) 
+     ========================================= -->
+<div id="messagePopup" class="popup-overlay">
+    <div class="popup-content">
+        <div class="popup-icon" id="messageIcon">⚠️</div>
+        <h3 id="messageTitle">THÔNG BÁO</h3>
+        <p id="messageText">Nội dung thông báo.</p>
+        <button onclick="closeMessagePopup()" class="btn-close-popup btn-warning-popup">ĐÃ HIỂU</button>
     </div>
 </div>
 
@@ -657,9 +683,9 @@
     // =========================================
     // QUẢN LÝ POPUP
     // =========================================
-    function showSuccessPopup(type) {
+    function showSuccessPopup(type, name) {
         const popup = document.getElementById('successPopup');
-        document.getElementById('popupMessage').innerHTML = `Đã ghi nhận điểm danh <b>[${type}]</b> thành công. <br>Chúc bạn một buổi đào tạo hiệu quả!`;
+        document.getElementById('popupMessage').innerHTML = `Chúc Mừng <span class="popup-name">${name}</span> đã hoàn thành điểm danh <b>[${type}]</b>.<br><br>Hãy vào lớp và học thật năng lượng nhé! 🚀`;
         popup.classList.add('show');
         
         resizeCanvas();
@@ -687,6 +713,23 @@
         animationFrameId = null;
         particles = [];
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Quay lại giao diện đầu tiên (xoá trắng form)
+        document.getElementById('attendanceForm').reset();
+    }
+
+    // =========================================
+    // QUẢN LÝ POPUP CẢNH BÁO
+    // =========================================
+    function showMessagePopup(icon, title, message) {
+        document.getElementById('messageIcon').innerText = icon;
+        document.getElementById('messageTitle').innerText = title;
+        document.getElementById('messageText').innerHTML = message;
+        document.getElementById('messagePopup').classList.add('show');
+    }
+
+    function closeMessagePopup() {
+        document.getElementById('messagePopup').classList.remove('show');
     }
 
     // 3. Xử lý Gửi điểm danh & Hiệu ứng Ripple Click
@@ -716,8 +759,8 @@
         const loader = document.getElementById('loader');
 
         if(!hoTen || !cuaHang) {
-            // Chờ 1 chút xíu để thấy hiệu ứng nút rồi mới cảnh báo
-            setTimeout(() => alert("Vui lòng chọn hoặc nhập đúng họ tên học viên từ danh sách!"), 100);
+            // Chờ 1 chút xíu để thấy hiệu ứng nút rồi mới cảnh báo bằng popup trong web
+            setTimeout(() => showMessagePopup("⚠️", "THIẾU THÔNG TIN", "Vui lòng chọn hoặc nhập đúng họ tên học viên từ danh sách!"), 100);
             return;
         }
 
@@ -731,15 +774,14 @@
         }).then(response => response.json())
         .then(data => {
             if(data.status === 'success') {
-                // ĐÃ ĐỔI: Gọi Popup Pháo Hoa thay cho alert thông thường
-                showSuccessPopup(type);
-                document.getElementById('attendanceForm').reset();
+                // ĐÃ ĐỔI: Gọi Popup Pháo Hoa truyền kèm Tên học viên
+                showSuccessPopup(type, hoTen);
             } else {
-                alert(`❌ Lỗi lưu dữ liệu: ${data.message}`);
+                showMessagePopup("❌", "LỖI LƯU DỮ LIỆU", `Không thể lưu: ${data.message}`);
             }
             loader.style.display = 'none';
         }).catch(error => {
-            alert("Lỗi kết nối máy chủ, vui lòng kiểm tra lại mạng.");
+            showMessagePopup("🌐", "LỖI KẾT NỐI", "Lỗi kết nối máy chủ, vui lòng kiểm tra lại mạng.");
             loader.style.display = 'none';
         });
     }
