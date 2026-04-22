@@ -47,14 +47,14 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* Nền chuyển động phụ trợ */
+        /* Nền chuyển động phụ trợ (Đã thêm nhiều khối đa sắc để tăng độ sâu) */
         .bg-shape {
             position: fixed;
             border-radius: 50%;
             z-index: -1;
-            filter: blur(60px);
-            opacity: 0.4;
-            animation: floatShape 10s ease-in-out infinite alternate;
+            filter: blur(70px);
+            opacity: 0.45;
+            animation: floatShape 12s ease-in-out infinite alternate;
         }
         .shape-1 {
             width: 300px; height: 300px;
@@ -62,15 +62,29 @@
             top: -100px; left: -100px;
         }
         .shape-2 {
-            width: 300px; height: 300px;
+            width: 320px; height: 320px;
             background: var(--color-orange);
             bottom: -100px; right: -100px;
             animation-delay: -5s;
         }
+        .shape-3 {
+            width: 250px; height: 250px;
+            background: #FFE0B2;
+            top: 40%; left: -80px;
+            animation-duration: 15s;
+            animation-delay: -2s;
+        }
+        .shape-4 {
+            width: 280px; height: 280px;
+            background: #B2DFDB;
+            bottom: 20%; right: -50px;
+            animation-duration: 18s;
+            animation-delay: -7s;
+        }
 
         @keyframes floatShape {
-            0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(40px, 40px) scale(1.1); }
+            0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+            100% { transform: translate(45px, 45px) scale(1.15) rotate(15deg); }
         }
 
         .app-container {
@@ -157,10 +171,21 @@
         input[type="text"]:focus, select:focus {
             border-color: var(--color-mint);
             background: #FFFFFF;
-            box-shadow: 0 0 0 4px rgba(94, 190, 158, 0.15); /* Hiệu ứng focus nổi bật */
+            box-shadow: 0 0 0 4px rgba(94, 190, 158, 0.15); 
         }
 
-        /* Styling cho input readonly */
+        /* --- Hiệu ứng khi gõ phím trên điện thoại --- */
+        @keyframes typingPulse {
+            0% { box-shadow: 0 0 0 2px rgba(94, 190, 158, 0.2); }
+            50% { box-shadow: 0 0 0 8px rgba(94, 190, 158, 0.4); }
+            100% { box-shadow: 0 0 0 2px rgba(94, 190, 158, 0.2); }
+        }
+        .is-typing {
+            animation: typingPulse 0.8s infinite;
+            border-color: var(--color-mint) !important;
+            background: #FFFFFF !important;
+        }
+
         input[type="text"]:read-only {
             background-color: #F3F4F6;
             color: var(--color-text-muted);
@@ -209,7 +234,7 @@
             background-color: #f0fdf6;
             color: var(--color-mint-dark);
             font-weight: 500;
-            padding-left: 22px; /* Hiệu ứng thò thụt nhẹ khi chọn trên mobile */
+            padding-left: 22px; 
         }
 
         .action-buttons {
@@ -233,6 +258,7 @@
             transition: all 0.1s;
             position: relative;
             top: 0;
+            overflow: hidden; /* Bắt buộc để Ripple không tràn ra ngoài */
         }
 
         .btn-in {
@@ -257,6 +283,22 @@
             box-shadow: 0 2px 0 var(--color-orange-dark), 0 4px 6px rgba(243, 106, 34, 0.2);
         }
 
+        /* --- Hiệu ứng Ripple (Sóng toả ra khi chạm) --- */
+        span.ripple-effect {
+            position: absolute;
+            border-radius: 50%;
+            transform: scale(0);
+            animation: rippleAnim 600ms linear;
+            background-color: rgba(255, 255, 255, 0.4);
+            pointer-events: none;
+        }
+        @keyframes rippleAnim {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
         .loader {
             display: none;
             color: var(--color-orange);
@@ -278,6 +320,8 @@
 <!-- Các khối nền chuyển động -->
 <div class="bg-shape shape-1"></div>
 <div class="bg-shape shape-2"></div>
+<div class="bg-shape shape-3"></div>
+<div class="bg-shape shape-4"></div>
 
 <div class="app-container">
     <img src="https://bismart.vn/wp-content/uploads/2025/12/logo-bi-1400x744.png" alt="Bi'S MART Logo" class="logo" onerror="this.style.display='none'">
@@ -297,11 +341,11 @@
             <input type="text" id="storeInput" placeholder="Sẽ tự động điền..." readonly required>
         </div>
 
-        <div class="loader" id="loader">⏳ Đang kiểm tra vị trí & Gửi dữ liệu...</div>
+        <div class="loader" id="loader">⏳ Đang gửi dữ liệu...</div>
 
         <div class="action-buttons">
-            <button type="button" class="btn-3d btn-in" onclick="submitData('Vào')">VÀO</button>
-            <button type="button" class="btn-3d btn-out" onclick="submitData('Ra')">RA</button>
+            <button type="button" class="btn-3d btn-in" onclick="submitData('Vào', event)">VÀO</button>
+            <button type="button" class="btn-3d btn-out" onclick="submitData('Ra', event)">RA</button>
         </div>
     </form>
 </div>
@@ -311,11 +355,6 @@
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzbBXhYyQUBNQY4KZI0hwIY7sqVo0UNbC97mPQAPzv7m-pg8IbSoC1dfLMgoH889-m5/exec"; // LƯU Ý: Sửa tại đây bằng URL mới
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQVDw7mfs54dxWOVJNB3UPxDzMgOqqDfpVfYks4C593qhQkIPIEoWrzZX6e0Xj4HewRdcroBgHC4elA/pub?gid=1052302387&single=true&output=csv";
     
-    // Tọa độ lớp học tại TP.HCM (Ví dụ: VP Bi'S MART)
-    const TARGET_LAT = 10.021432547411322; 
-    const TARGET_LNG = 105.78331504920821; 
-    const MAX_DISTANCE_KM = 1.0; 
-
     let globalStudents = [];
 
     // 1. Tải danh sách từ CSV ngay khi mở Web (Quét thủ công bỏ qua dòng gộp)
@@ -388,13 +427,24 @@
                 searchInput.value = student.name;
                 storeInput.value = student.store;
                 suggestionList.style.display = 'none';
+                searchInput.classList.remove('is-typing'); // Bỏ hiệu ứng gõ khi đã chọn
             });
             suggestionList.appendChild(li);
         });
         suggestionList.style.display = 'block';
     }
 
+    // --- Thêm hiệu ứng phát sáng khi gõ phím ---
+    let typingTimer;
     searchInput.addEventListener('input', (e) => {
+        // Thêm class phát sáng nhịp tim
+        searchInput.classList.add('is-typing');
+        clearTimeout(typingTimer);
+        // Tự động tắt sau 600ms ngừng gõ
+        typingTimer = setTimeout(() => {
+            searchInput.classList.remove('is-typing');
+        }, 600);
+
         renderSuggestions(e.target.value);
         const student = globalStudents.find(s => s.name === e.target.value.trim());
         if (!student) {
@@ -412,71 +462,58 @@
         }
     });
 
-    // 3. Hàm tính khoảng cách GPS (Haversine Formula)
-    function getDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371; 
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLon = (lon2 - lon1) * Math.PI / 180;
-        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                Math.sin(dLon/2) * Math.sin(dLon/2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        return R * c; 
-    }
+    // 3. Xử lý Gửi điểm danh & Hiệu ứng Ripple Click (Đã bỏ GPS)
+    function submitData(type, event) {
+        // --- Chạy hiệu ứng Ripple Sóng nước khi nhấn ---
+        if (event) {
+            const button = event.currentTarget;
+            const circle = document.createElement("span");
+            const diameter = Math.max(button.clientWidth, button.clientHeight);
+            const radius = diameter / 2;
 
-    // 4. Xử lý Gửi điểm danh - MỚI: SỬ DỤNG GIAO THỨC GET VƯỢT LỖI CORS
-    function submitData(type) {
+            circle.style.width = circle.style.height = `${diameter}px`;
+            circle.style.left = `${event.clientX - button.getBoundingClientRect().left - radius}px`;
+            circle.style.top = `${event.clientY - button.getBoundingClientRect().top - radius}px`;
+            circle.classList.add("ripple-effect");
+
+            // Xoá sóng cũ nếu bấm liên tiếp
+            const existingRipple = button.querySelector('.ripple-effect');
+            if (existingRipple) {
+                existingRipple.remove();
+            }
+            button.appendChild(circle);
+        }
+
         const hoTen = document.getElementById('searchInput').value.trim();
         const cuaHang = document.getElementById('storeInput').value.trim();
         const loader = document.getElementById('loader');
 
         if(!hoTen || !cuaHang) {
-            alert("Vui lòng chọn hoặc nhập đúng họ tên học viên từ danh sách!");
+            // Chờ 1 chút xíu để thấy hiệu ứng nút rồi mới cảnh báo
+            setTimeout(() => alert("Vui lòng chọn hoặc nhập đúng họ tên học viên từ danh sách!"), 100);
             return;
         }
 
         loader.style.display = 'block';
 
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const dist = getDistance(position.coords.latitude, position.coords.longitude, TARGET_LAT, TARGET_LNG);
-                    
-                    if (dist > MAX_DISTANCE_KM) {
-                        alert(`❌ Bạn đang ở quá xa lớp học! (Khoảng cách hiện tại: ${dist.toFixed(2)} km)`);
-                        loader.style.display = 'none';
-                        return;
-                    }
+        // Đóng gói dữ liệu vào URL để gửi phương thức GET
+        const urlWithParams = `${APPS_SCRIPT_URL}?hoTen=${encodeURIComponent(hoTen)}&cuaHang=${encodeURIComponent(cuaHang)}&loaiDiemDanh=${encodeURIComponent(type)}`;
 
-                    // Đủ điều kiện GPS -> Đóng gói dữ liệu vào URL để gửi phương thức GET
-                    const urlWithParams = `${APPS_SCRIPT_URL}?hoTen=${encodeURIComponent(hoTen)}&cuaHang=${encodeURIComponent(cuaHang)}&loaiDiemDanh=${encodeURIComponent(type)}`;
-
-                    fetch(urlWithParams, {
-                        method: 'GET',
-                    }).then(response => response.json())
-                    .then(data => {
-                        if(data.status === 'success') {
-                            alert(`✅ Đã ghi nhận Điểm danh [${type}] thành công!`);
-                            document.getElementById('attendanceForm').reset();
-                        } else {
-                            alert(`❌ Lỗi lưu dữ liệu: ${data.message}`);
-                        }
-                        loader.style.display = 'none';
-                    }).catch(error => {
-                        alert("Lỗi kết nối máy chủ, vui lòng kiểm tra lại mạng.");
-                        loader.style.display = 'none';
-                    });
-                },
-                (error) => {
-                    alert("❌ Không thể lấy vị trí. Vui lòng cấp quyền Định vị (GPS) trên trình duyệt cho trang web này!");
-                    loader.style.display = 'none';
-                },
-                { enableHighAccuracy: true, timeout: 10000 }
-            );
-        } else {
-            alert("Trình duyệt của bạn không hỗ trợ định vị GPS.");
+        fetch(urlWithParams, {
+            method: 'GET',
+        }).then(response => response.json())
+        .then(data => {
+            if(data.status === 'success') {
+                alert(`✅ Đã ghi nhận Điểm danh [${type}] thành công!`);
+                document.getElementById('attendanceForm').reset();
+            } else {
+                alert(`❌ Lỗi lưu dữ liệu: ${data.message}`);
+            }
             loader.style.display = 'none';
-        }
+        }).catch(error => {
+            alert("Lỗi kết nối máy chủ, vui lòng kiểm tra lại mạng.");
+            loader.style.display = 'none';
+        });
     }
 </script>
 </body>
