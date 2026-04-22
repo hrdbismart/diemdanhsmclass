@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bi'S MART - Điểm Danh Đào Tạo</title>
+    <!-- Font Roboto cho nội dung -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <!-- Thư viện đọc CSV -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <style>
+        :root {
+            /* Màu thương hiệu */
+            --color-orange: #F36A22;
+            --color-orange-dark: #D45A1A;
+            --color-mint: #5EBE9E;
+            --color-mint-dark: #4A9E82;
+            
+            /* Màu nền tươi sáng */
+            --color-bg: #F4F7F6;
+            --color-card: #FFFFFF;
+            --color-text-main: #333333;
+            --color-text-muted: #777777;
+            --color-border: #E5E7EB;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(-45deg, #F4F7F6, #e8f5f1, #fdece3, #ffffff);
+            background-size: 400% 400%;
+            animation: gradientBG 12s ease infinite;
+            color: var(--color-text-main);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 15px;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent; /* Tắt highlight mặc định trên Mobile */
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Nền chuyển động phụ trợ */
+        .bg-shape {
+            position: fixed;
+            border-radius: 50%;
+            z-index: -1;
+            filter: blur(60px);
+            opacity: 0.4;
+            animation: floatShape 10s ease-in-out infinite alternate;
+        }
+        .shape-1 {
+            width: 300px; height: 300px;
+            background: var(--color-mint);
+            top: -100px; left: -100px;
+        }
+        .shape-2 {
+            width: 300px; height: 300px;
+            background: var(--color-orange);
+            bottom: -100px; right: -100px;
+            animation-delay: -5s;
+        }
+
+        @keyframes floatShape {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(40px, 40px) scale(1.1); }
+        }
+
+        .app-container {
+            background-color: var(--color-card);
+            width: 100%;
+            max-width: 420px;
+            border-radius: 24px;
+            padding: 35px 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08); /* Bóng đổ mềm mại cho nền trắng */
+            text-align: center;
+            border-top: 6px solid var(--color-orange);
+            border-bottom: 6px solid var(--color-mint);
+        }
+
+        .logo {
+            width: 140px;
+            margin-bottom: 15px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+            100% { transform: translateY(0px); }
+        }
+
+        h2 {
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 30px;
+            color: var(--color-text-main);
+            font-size: 20px;
+        }
+        
+        h2 span {
+            color: var(--color-orange);
+        }
+
+        .welcome-text {
+            font-size: 14.5px;
+            line-height: 1.5;
+            color: var(--color-text-muted);
+            margin-bottom: 25px;
+            padding: 0 5px;
+            font-weight: 500;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 22px;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: var(--color-text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid var(--color-border);
+            background: #F9FAFB;
+            color: var(--color-text-main);
+            border-radius: 14px;
+            font-size: 16px; /* 16px chuẩn để iOS không auto-zoom */
+            font-weight: 500;
+            box-sizing: border-box;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]::placeholder {
+            color: #A0AEC0;
+            font-weight: 400;
+        }
+
+        input[type="text"]:focus, select:focus {
+            border-color: var(--color-mint);
+            background: #FFFFFF;
+            box-shadow: 0 0 0 4px rgba(94, 190, 158, 0.15); /* Hiệu ứng focus nổi bật */
+        }
+
+        /* Styling cho input readonly */
+        input[type="text"]:read-only {
+            background-color: #F3F4F6;
+            color: var(--color-text-muted);
+            border-color: var(--color-border);
+            cursor: not-allowed;
+        }
+
+        /* Thêm CSS cho thanh xổ xuống (Dropdown) */
+        .autocomplete-container {
+            position: relative;
+        }
+
+        .suggestion-list {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #FFFFFF;
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            margin-top: 6px;
+            padding: 0;
+            list-style: none;
+            max-height: 240px;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        .suggestion-list li {
+            padding: 15px 18px;
+            font-size: 16px;
+            color: var(--color-text-main);
+            border-bottom: 1px solid #F3F4F6;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .suggestion-list li:last-child {
+            border-bottom: none;
+        }
+
+        .suggestion-list li:active, .suggestion-list li:hover {
+            background-color: #f0fdf6;
+            color: var(--color-mint-dark);
+            font-weight: 500;
+            padding-left: 22px; /* Hiệu ứng thò thụt nhẹ khi chọn trên mobile */
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 35px;
+        }
+
+        /* Nút phong cách Solid 3D tươi sáng */
+        .btn-3d {
+            flex: 1;
+            padding: 16px 0;
+            border: none;
+            border-radius: 16px;
+            font-size: 18px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            color: white;
+            transition: all 0.1s;
+            position: relative;
+            top: 0;
+        }
+
+        .btn-in {
+            background-color: var(--color-mint);
+            box-shadow: 0 6px 0 var(--color-mint-dark), 0 10px 10px rgba(94, 190, 158, 0.2);
+        }
+
+        .btn-out {
+            background-color: var(--color-orange);
+            box-shadow: 0 6px 0 var(--color-orange-dark), 0 10px 10px rgba(243, 106, 34, 0.2);
+        }
+
+        .btn-3d:active {
+            top: 4px;
+        }
+        
+        .btn-in:active {
+            box-shadow: 0 2px 0 var(--color-mint-dark), 0 4px 6px rgba(94, 190, 158, 0.2);
+        }
+
+        .btn-out:active {
+            box-shadow: 0 2px 0 var(--color-orange-dark), 0 4px 6px rgba(243, 106, 34, 0.2);
+        }
+
+        .loader {
+            display: none;
+            color: var(--color-orange);
+            margin-top: 15px;
+            font-weight: 700;
+            font-size: 14px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Các khối nền chuyển động -->
+<div class="bg-shape shape-1"></div>
+<div class="bg-shape shape-2"></div>
+
+<div class="app-container">
+    <img src="https://bismart.vn/wp-content/uploads/2025/12/logo-bi-1400x744.png" alt="Bi'S MART Logo" class="logo" onerror="this.style.display='none'">
+    <h2>ĐIỂM DANH <span>ĐÀO TẠO</span></h2>
+
+    <p class="welcome-text">Chào mừng Bạn đến với Chương trình đào tạo dành cho Cửa Hàng Trưởng! Hãy hoàn thành điểm danh và bắt đầu học với tràn đầy năng lượng nhé! 🚀</p>
+
+    <form id="attendanceForm">
+        <div class="form-group autocomplete-container">
+            <label>Họ và tên học viên</label>
+            <input type="text" id="searchInput" placeholder="Nhập hoặc chọn tên..." required autocomplete="off">
+            <ul id="suggestionList" class="suggestion-list"></ul>
+        </div>
+
+        <div class="form-group">
+            <label>Cửa hàng / Khu vực</label>
+            <input type="text" id="storeInput" placeholder="Sẽ tự động điền..." readonly required>
+        </div>
+
+        <div class="loader" id="loader">⏳ Đang kiểm tra vị trí & Gửi dữ liệu...</div>
+
+        <div class="action-buttons">
+            <button type="button" class="btn-3d btn-in" onclick="submitData('Vào')">VÀO</button>
+            <button type="button" class="btn-3d btn-out" onclick="submitData('Ra')">RA</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // --- CẤU HÌNH HỆ THỐNG (Giữ nguyên cấu trúc logic) ---
+    const APPS_SCRIPT_URL = "DÁN_URL_WEB_APP_CỦA_BẠN_VÀO_ĐÂY"; // Sửa tại đây
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQVDw7mfs54dxWOVJNB3UPxDzMgOqqDfpVfYks4C593qhQkIPIEoWrzZX6e0Xj4HewRdcroBgHC4elA/pub?gid=1052302387&single=true&output=csv";
+    
+    // Tọa độ lớp học tại TP.HCM (Ví dụ: VP Bi'S MART)
+    const TARGET_LAT = 10.762622; // Thay đổi vĩ độ
+    const TARGET_LNG = 106.660172; // Thay đổi kinh độ
+    const MAX_DISTANCE_KM = 1.0; 
+
+    let globalStudents = [];
+
+    // 1. Tải danh sách từ CSV ngay khi mở Web (Đã fix lỗi dòng tiêu đề gộp)
+    Papa.parse(CSV_URL, {
+        download: true,
+        header: false, // Tắt header mặc định để tự quét thủ công
+        complete: function(results) {
+            const rows = results.data;
+            let headerRowIndex = -1;
+            let nameIndex = -1;
+            let storeIndex = -1;
+
+            // Tìm tự động dòng chứa "Họ và Tên" và "Cửa Hàng"
+            for(let i = 0; i < Math.min(10, rows.length); i++) {
+                for(let j = 0; j < rows[i].length; j++) {
+                    if(typeof rows[i][j] === 'string' && rows[i][j].trim() === "Họ và Tên") {
+                        headerRowIndex = i;
+                        nameIndex = j;
+                    }
+                    if(typeof rows[i][j] === 'string' && rows[i][j].trim() === "Cửa Hàng") {
+                        storeIndex = j;
+                    }
+                }
+                if(headerRowIndex !== -1) break; // Đã tìm thấy dòng tiêu đề
+            }
+
+            if(nameIndex !== -1 && storeIndex !== -1) {
+                // Đọc dữ liệu từ các dòng dưới dòng tiêu đề
+                for(let i = headerRowIndex + 1; i < rows.length; i++) {
+                    const name = rows[i][nameIndex];
+                    const store = rows[i][storeIndex];
+                    
+                    if(name && name.trim() !== "") {
+                        globalStudents.push({
+                            name: name.trim(),
+                            store: store ? store.trim() : ""
+                        });
+                    }
+                }
+            }
+        }
+    });
+
+    // 2. Xử lý thanh xổ xuống (Dropdown) tùy chỉnh tối ưu cho Mobile
+    const searchInput = document.getElementById('searchInput');
+    const suggestionList = document.getElementById('suggestionList');
+    const storeInput = document.getElementById('storeInput');
+
+    function renderSuggestions(filterText = "") {
+        suggestionList.innerHTML = "";
+        const trimmedText = filterText.trim();
+        const lowerFilter = trimmedText.toLowerCase();
+        
+        // Chỉ hiển thị gợi ý khi nhập ít nhất 4 ký tự
+        if (trimmedText.length < 4) {
+            suggestionList.style.display = 'none';
+            return;
+        }
+        
+        const filtered = globalStudents.filter(s => s.name.toLowerCase().includes(lowerFilter));
+        
+        if (filtered.length === 0) {
+            suggestionList.style.display = 'none';
+            return;
+        }
+
+        filtered.forEach(student => {
+            const li = document.createElement('li');
+            li.textContent = student.name;
+            // Xử lý khi chọn tên từ danh sách
+            li.addEventListener('click', () => {
+                searchInput.value = student.name;
+                storeInput.value = student.store;
+                suggestionList.style.display = 'none';
+            });
+            suggestionList.appendChild(li);
+        });
+        suggestionList.style.display = 'block';
+    }
+
+    // Khi người dùng gõ phím tìm kiếm
+    searchInput.addEventListener('input', (e) => {
+        renderSuggestions(e.target.value);
+        const student = globalStudents.find(s => s.name === e.target.value.trim());
+        if (!student) {
+            storeInput.value = "";
+        }
+    });
+
+    // Hiện danh sách khi bấm vào ô nhập
+    searchInput.addEventListener('focus', () => {
+        renderSuggestions(searchInput.value);
+    });
+
+    // Ẩn thanh xổ xuống khi chạm ra ngoài
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.autocomplete-container')) {
+            suggestionList.style.display = 'none';
+        }
+    });
+
+    // 3. Hàm tính khoảng cách GPS (Haversine Formula)
+    function getDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371; // Bán kính trái đất (km)
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c; 
+    }
+
+    // 4. Xử lý Gửi điểm danh
+    function submitData(type) {
+        const hoTen = document.getElementById('searchInput').value.trim();
+        const cuaHang = document.getElementById('storeInput').value.trim();
+        const loader = document.getElementById('loader');
+
+        if(!hoTen || !cuaHang) {
+            alert("Vui lòng chọn hoặc nhập đúng họ tên học viên từ danh sách!");
+            return;
+        }
+
+        loader.style.display = 'block';
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const dist = getDistance(position.coords.latitude, position.coords.longitude, TARGET_LAT, TARGET_LNG);
+                    
+                    if (dist > MAX_DISTANCE_KM) {
+                        alert(`❌ Bạn đang ở quá xa lớp học! (Khoảng cách hiện tại: ${dist.toFixed(2)} km)`);
+                        loader.style.display = 'none';
+                        return;
+                    }
+
+                    // Đủ điều kiện GPS -> Gửi API
+                    const payload = {
+                        hoTen: hoTen,
+                        cuaHang: cuaHang,
+                        loaiDiemDanh: type
+                    };
+
+                    fetch(APPS_SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'no-cors', 
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(payload)
+                    }).then(() => {
+                        alert(`✅ Đã ghi nhận Điểm danh [${type}] thành công!`);
+                        document.getElementById('attendanceForm').reset();
+                        loader.style.display = 'none';
+                    }).catch(error => {
+                        alert("Lỗi kết nối máy chủ, vui lòng thử lại.");
+                        loader.style.display = 'none';
+                    });
+                },
+                (error) => {
+                    alert("❌ Không thể lấy vị trí. Vui lòng cấp quyền Định vị (GPS) trên trình duyệt cho trang web này!");
+                    loader.style.display = 'none';
+                },
+                { enableHighAccuracy: true, timeout: 10000 }
+            );
+        } else {
+            alert("Trình duyệt của bạn không hỗ trợ định vị GPS.");
+            loader.style.display = 'none';
+        }
+    }
+</script>
+</body>
+</html>
