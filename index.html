@@ -516,7 +516,7 @@
             let storeIndex = -1;
 
             // Tìm tự động dòng chứa "Họ và Tên" và "Cửa Hàng"
-            for(let i = 0; i < Math.min(10, rows.length); i++) {
+            for(let i = 0; i < Math.min(20, rows.length); i++) {
                 for(let j = 0; j < rows[i].length; j++) {
                     if(typeof rows[i][j] === 'string' && rows[i][j].trim() === "Họ và Tên") {
                         headerRowIndex = i;
