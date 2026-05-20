@@ -500,8 +500,8 @@
 
 <script>
     // --- CẤU HÌNH HỆ THỐNG ---
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzbBXhYyQUBNQY4KZI0hwIY7sqVo0UNbC97mPQAPzv7m-pg8IbSoC1dfLMgoH889-m5/exec";
-    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQVDw7mfs54dxWOVJNB3UPxDzMgOqqDfpVfYks4C593qhQkIPIEoWrzZX6e0Xj4HewRdcroBgHC4elA/pub?gid=1052302387&single=true&output=csv";
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzRPPjOgmKSKvrgKAAWhaejHa4PyOssR3fe3TrBGEuw6r2s5xNIe604iSbGzNIYvvc1/exec";
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRr1LeqihPkdtVcjkG5DBa4a2_i8TPSgOmbraQMwPi_o3YwQFle1Z9sU6RfCUG_or7GTQkJoDBBBsCH/pub?gid=1038900495&single=true&output=csv";
     
     let globalStudents = [];
 
@@ -555,8 +555,8 @@
         const trimmedText = filterText.trim();
         const lowerFilter = trimmedText.toLowerCase();
         
-        // Chỉ hiển thị gợi ý khi nhập ít nhất 4 ký tự (Không phân biệt hoa thường)
-        if (trimmedText.length < 4) {
+        // Chỉ hiển thị gợi ý khi nhập ít nhất 3 ký tự (Không phân biệt hoa thường)
+        if (trimmedText.length < 3) {
             suggestionList.style.display = 'none';
             return;
         }
